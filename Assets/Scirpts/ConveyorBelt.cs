@@ -4,42 +4,24 @@ public class ConveyorBelt : MonoBehaviour
 {
     public float speed = 2.0f;
     public Vector3 direction = Vector3.forward;
-    public Vector3 detectionSize = new Vector3(0.9f, 0.5f, 0.9f);
-    public Vector3 offset = new Vector3(0, 0.6f, 0);
+    public LayerMask affectedLayers;
 
-    private void Update()
+    private void OnTriggerStay(Collider other)
     {
-        Vector3 worldDirection = transform.TransformDirection(direction.normalized);
-        Collider[] colliders = Physics.OverlapBox(transform.position + transform.TransformDirection(offset), detectionSize / 2, transform.rotation);
-
-        foreach (Collider col in colliders)
+        if ((affectedLayers.value & (1 << other.gameObject.layer)) > 0)
         {
-            if (col.gameObject == gameObject) continue;
+            Vector3 movement = transform.TransformDirection(direction) * speed * Time.deltaTime;
 
-            if (col.gameObject.layer == LayerMask.NameToLayer("Player"))
+            CharacterController controller = other.GetComponent<CharacterController>();
+
+            if (controller != null)
             {
-                CharacterController cc = col.GetComponent<CharacterController>();
-                if (cc != null)
-                {
-                    cc.Move(worldDirection * speed * Time.fixedDeltaTime);
-                }
+                controller.Move(movement);
             }
             else
             {
-                Rigidbody rb = col.GetComponent<Rigidbody>();
-                if (rb != null && !rb.isKinematic)
-                {
-                    Vector3 targetVelocity = worldDirection * speed;
-                    rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
-                }
+                other.transform.position += movement;
             }
         }
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.DrawWireCube(offset, detectionSize);
     }
 }
