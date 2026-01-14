@@ -4,10 +4,11 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 5f;
+    public float sprintMultiplier = 2f;
     public float jumpHeight = 2f;
     public float gravity = -19.62f;
 
-    [Header("Mouse Hassasiyeti")]
+    [Header("Mouse Sensitivity")]
     public float sensitivityX = 200f;
     public float sensitivityY = 200f;
 
@@ -46,7 +47,13 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 move = transform.right * x + transform.forward * z;
 
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        float currentSpeed = moveSpeed;
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            currentSpeed *= sprintMultiplier;
+        }
+
+        controller.Move(move * currentSpeed * Time.deltaTime);
 
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
